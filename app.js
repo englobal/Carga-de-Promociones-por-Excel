@@ -1,4 +1,6 @@
-const CFG = {
+/* TODO: acá va TODO el contenido que hoy está dentro del <script>...</script>
+   de index_FINAL_AREA_CORRECTO.html, sin cambios. */
+   const CFG = {
   SHEET_BY_TIPO: {
     NOMINAL: "Precio Fijo a Productos",
     PORCENTUAL: "Porcentaje a Productos",
@@ -2454,8 +2456,6 @@ async function runPreview(){
     log(err?.stack || String(err));
   }
 }
-
-btnPreview.addEventListener('click', runPreview);
 // ================= END PREVIEW =================
 
 // (Nada más del código va aquí: este archivo original termina con el JS que ya venías usando.)
@@ -2470,6 +2470,9 @@ btnPreview.addEventListener('click', runPreview);
 // ===== Preview (versión original que pegaste) =====
 
 // OJO: si ya agregaste otro listener antes, evitá duplicarlo.
+btnPreview.addEventListener('click', runPreview);
+
+btnPreview.addEventListener('click', runPreview);
 
 function closePreview(){
   document.getElementById('previewModal').style.display = 'none';
@@ -2572,6 +2575,7 @@ function runPreview(){
     setStatus(err.message, 'err');
   }
 }
+
 // Con la separación en archivos, es mejor enganchar el botón por JS:
 document.addEventListener('click', (e) => {
   const btn = e.target?.closest?.('[data-preview-close]');
