@@ -2421,7 +2421,14 @@ async function runPreview(){
       previewModo.textContent = `Normal · ${planTipos.join(' + ')}`;
 
       const rows = buildPreviewRowsNormal({ planTipos, promosByTipo, umbral, usarListas });
-      renderPreviewTableNormal(rows);
+      if (planTipos.length === 1 && planTipos[0] === 'NOMINAL') {
+      const promos = promosByTipo.get('NOMINAL') || [];
+      const coberturaTodos = detectCoberturaLocalesTodos(origenFiltrado);
+      
+        renderPreviewCardsNominal(promos, coberturaTodos);
+      } else {
+        renderPreviewTableNormal(rows); // fallback
+      }
       openPreviewModal();
       return;
     }
