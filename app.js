@@ -2506,7 +2506,6 @@ function runPreview(){
     tipos.forEach(tipo => {
       const grouped = groupPromosByNumero(kept, tipo);
 
-      // ⚠️ SI FALLA, LO MOSTRAMOS
       if(grouped.error){
         html += `
           <div style="padding:12px; margin-bottom:10px; background:#fee2e2; border-radius:10px;">
@@ -2518,7 +2517,6 @@ function runPreview(){
 
       const promos = grouped.promos || [];
 
-      // 🔥 SI NO HAY PROMOS → MOSTRAR MENSAJE
       if(promos.length === 0){
         html += `
           <div style="padding:12px; margin-bottom:10px; background:#fef3c7; border-radius:10px;">
@@ -2544,17 +2542,8 @@ function runPreview(){
             <div><b>EANs:</b> ${(p.eans || []).slice(0,3).join(', ')}</div>
             <div><b>Fechas:</b> ${p.fechaInicio} → ${p.fechaFin}</div>
 
-            ${
-              p.precioFinal != null
-                ? `<div><b>Precio:</b> ${p.precioFinal}</div>`
-                : ''
-            }
-
-            ${
-              p.descuentoPct != null
-                ? `<div><b>%:</b> ${p.descuentoPct}</div>`
-                : ''
-            }
+            ${p.precioFinal != null ? `<div><b>Precio:</b> ${p.precioFinal}</div>` : ''}
+            ${p.descuentoPct != null ? `<div><b>%:</b> ${p.descuentoPct}</div>` : ''}
           </div>
         `;
       });
@@ -2562,7 +2551,6 @@ function runPreview(){
 
     console.log("HTML generado:", html.length);
 
-    // 🔥 SI QUEDA VACÍO → FORZAR MENSAJE
     if(!html.trim()){
       html = `
         <div style="padding:20px;">
@@ -2584,7 +2572,6 @@ function runPreview(){
     setStatus(err.message, 'err');
   }
 }
-
 // Con la separación en archivos, es mejor enganchar el botón por JS:
 document.addEventListener('click', (e) => {
   const btn = e.target?.closest?.('[data-preview-close]');
