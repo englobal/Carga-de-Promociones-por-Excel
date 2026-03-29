@@ -1563,7 +1563,7 @@ function refreshUI(){
     : !!eventUserSelect.value && sanitizeLetters2(eventInitials.value).length === 2;
   const ok = !!wbOrigen && !!wbBase && nombreGeneralOk && modeOk && clubOk;
   btnProcesar.disabled = !ok;
-  btnPreview.disabled = !cacheOrigenParsed;
+  btnPreview.disabled = false;
 
   if (currentSourceMode === SOURCE_MODE.NORMAL){
     const modoText = `Flujo: ${prettyModoValue(modoSelect.value)}${chkClub.checked ? ' · CLUB' : ''}`;
@@ -1757,6 +1757,8 @@ eventInitials.addEventListener('input', ()=>{
 });
 
 fileOrigen.addEventListener('change', async (e)=>{
+	log('cacheOrigenParsed OK:', !!cacheOrigenParsed);
+    console.log('PARSE RESULT:', cacheOrigenParsed);
   const f = e.target.files?.[0];
   if (!f) return;
 
@@ -2391,6 +2393,8 @@ function renderPreviewTableEventos(rows){
 }
 
 async function runPreview(){
+	log('RUN PREVIEW');
+    console.log('RUN PREVIEW START');
   try{
     if (!wbOrigen) throw new Error('Carga primero el Excel Origen.');
     if (currentSourceMode === SOURCE_MODE.NORMAL && !cacheOrigenParsed) throw new Error('Origen no está parseado todavía.');
@@ -2477,7 +2481,23 @@ async function runPreview(){
 // ===== Preview (versión original que pegaste) =====
 
 // OJO: si ya agregaste otro listener antes, evitá duplicarlo.
-btnPreview.addEventListener('click', runPreview);
+btnPreview.addEventListener('click', () => {
+  console.log('CLICK PREVIEW');
+
+  console.log('wbOrigen:', !!wbOrigen);
+  console.log('cacheOrigenParsed:', !!cacheOrigenParsed);
+  console.log('modo:', currentSourceMode);
+  console.log('modoSelect:', modoSelect.value);
+  console.log('nombreGeneral:', nombreGeneralInput.value);
+
+  if (btnPreview.disabled) {
+    console.warn('BOTON DESHABILITADO → no ejecuta preview');
+    setStatus('Preview bloqueado: falta cargar Origen correctamente', 'warn');
+    return;
+  }
+
+  runPreview();
+});
 
 function renderPreviewCardsNominal(promos, coberturaTodos){
   const cards = promos.map(p => {
@@ -2589,9 +2609,14 @@ function renderPreviewCardsNominal(promos, coberturaTodos){
             </div>
 
             <div>
-              📦 <b>Aplicado a</b><br>
-              <span style="color:#166534">EAN = ${ean}</span>
-            </div>
+			  📦 <b>Aplicado a</b><br>
+			  <span style="color:#166534">EAN = ${ean}</span>
+			</div>
+
+			<div>
+			  🔢 <b>Por unidad</b><br>
+			  <span style="color:#166534">SI</span>
+			</div>
 
           </div>
         </div>
