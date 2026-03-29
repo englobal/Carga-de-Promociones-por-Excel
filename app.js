@@ -2395,8 +2395,11 @@ function renderPreviewTableEventos(rows){
 }
 
 async function runPreview(){
-	log('RUN PREVIEW');
-    console.log('RUN PREVIEW START');
+  currentSourceMode = SOURCE_MODE.NORMAL; // 🔥 FIX CLAVE
+
+  log('RUN PREVIEW');
+  console.log('RUN PREVIEW START');
+  console.log('ANTES DE VALIDACIONES');
   try{
     if (!wbOrigen) throw new Error('Carga primero el Excel Origen.');
     if (currentSourceMode === SOURCE_MODE.NORMAL && !cacheOrigenParsed) throw new Error('Origen no está parseado todavía.');
@@ -2465,6 +2468,8 @@ async function runPreview(){
     renderPreviewTableEventos(rows);
     openPreviewModal();
   } catch(err){
+	  console.error('ERROR PREVIEW:', err);
+      alert(err.message);
     setStatus('Preview: ' + (err?.message || err), 'err');
     log(err?.stack || String(err));
   }
@@ -2486,19 +2491,12 @@ async function runPreview(){
 btnPreview.addEventListener('click', () => {
   console.log('CLICK PREVIEW');
 
-  console.log('wbOrigen:', !!wbOrigen);
-  console.log('cacheOrigenParsed:', !!cacheOrigenParsed);
-  console.log('modo:', currentSourceMode);
-  console.log('modoSelect:', modoSelect.value);
-  console.log('nombreGeneral:', nombreGeneralInput.value);
-
-  if (btnPreview.disabled) {
-    console.warn('BOTON DESHABILITADO → no ejecuta preview');
-    setStatus('Preview bloqueado: falta cargar Origen correctamente', 'warn');
-    return;
+  try{
+    runPreview();
+  }catch(err){
+    console.error('ERROR CLICK:', err);
+    alert(err.message);
   }
-
-  runPreview();
 });
 
 function renderPreviewCardsNominal(promos, coberturaTodos){
