@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Promos Builder (Normal / Eventos)</title>
+
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">
+        <h1>Promos Builder</h1>
+        <p>
+          Flujo normal mantiene la lógica de <b>Completar</b> para <b>NOMINAL</b>, <b>PORCENTUAL</b>, <b>PACK 2X1</b> y
+          <b>DESCUENTO 2DA UNIDAD (%)</b>. Flujo <b>Eventos</b> trabaja por usuario RC, arma listas de productos desde
+          <b>CODIGO-MARCA</b>, listas de locales desde <b>LOCAL</b> y escribe el resultado en <b>Porcentaje a Productos</b>.
+        </p>
+
+        <div class="sourceSwitch" id="sourceSwitch">
+          <label class="sourceOption active" id="optNormal">
+            <input type="radio" name="sourceMode" value="normal" checked />
+            <div class="box">
+              <div class="dot"></div>
+              <div class="txt">
+                <strong>Carga normal</strong>
+                <span>Usa la lógica de la hoja <b>Completar</b> para NOMINAL / PORCENTUAL / PACK 2X1 / DESCUENTO 2DA UNIDAD (%).</span>
+              </div>
+            </div>
+          </label>
+
+          <label class="sourceOption" id="optEventos">
+            <input type="radio" name="sourceMode" value="eventos" />
+            <div class="box">
+              <div class="dot"></div>
+              <div class="txt">
+                <strong>Carga de eventos</strong>
+                <span>Separa la lógica del flujo estándar y procesa <b>RC</b>, <b>N°CAM</b>, <b>LOCAL</b>, <b>MARCA</b> y <b>DESCUENTO</b>.</span>
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <div class="stepbar">
+          <span class="step pending" id="st1"><span class="n">1</span>Cargar Origen</span>
+          <span class="step pending" id="st2"><span class="n">2</span>Cargar Base</span>
+          <span class="step pending" id="st3"><span class="n">3</span>Definir Flujo</span>
+          <span class="step pending" id="st4"><span class="n">4</span>Completar Datos</span>
+          <span class="step pending" id="st5"><span class="n">5</span>Generar</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h">
+        <h2>Inputs</h2>
+        <div class="kpi">
+          <span class="kpi-badge" id="pillModo"><strong>Flujo:</strong> Normal</span>
+          <span class="kpi-badge alt" id="pillListas"><strong>Listas:</strong> 0</span>
+          <span class="kpi-badge" id="pillArea"><strong>Área:</strong> -</span>
+        </div>
+      </div>
+
+      <div class="panel-b">
+        <div class="grid">
+          <div class="field">
+            <label for="fileOrigen">Excel Origen</label>
+            <input id="fileOrigen" type="file" accept=".xlsx,.xls" />
+            <div class="sub" id="subOrigen">Modo normal: se lee la hoja <b>Completar</b> y se ignoran filas “NO CONSIDERAR” / “PRECIO FIJO”.</div>
+          </div>
+
+          <div class="field">
+            <label for="fileBase">Excel Base</label>
+            <input id="fileBase" type="file" accept=".xlsx,.xls" />
+            <div class="sub">Debe incluir al menos: <b>Porcentaje a Productos</b>, <b>Lista de Productos</b> y <b>Lista de Locales</b>.</div>
+          </div>
+
+          <div class="field" id="normalModoField">
+            <label for="modoSelect">Modo de generación</label>
+            <select id="modoSelect" disabled>
+              <option value="">(carga Origen)</option>
+            </select>
+          </div>
+
+          <div class="field hidden" id="eventUserField">
+            <label for="eventUserSelect">Usuario RC a procesar</label>
+            <select id="eventUserSelect" disabled>
+              <option value="">(carga Excel de Eventos)</option>
+            </select>
+            <div class="sub">Se llena automáticamente con los nombres encontrados en la columna <b>RC</b>.</div>
+          </div>
+
+          <div class="field">
+            <label for="nombreGeneral">Nombre General</label>
+
+            <div class="toggle" style="margin-bottom:10px;">
+              <input id="chkNombreGeneralDefault" type="checkbox" checked />
+              <div style="display:flex; flex-direction:column; gap:2px;">
+                <div style="font-size:12px; font-weight:950;">Usar nombre general por defecto</div>
+                <div style="font-size:11px; color:var(--muted);">
+                  Si está activado, se usará automáticamente <b>DESCUENTO FCV</b>.
+                  Si lo desactivas, podrás escribir un nombre personalizado.
+                </div>
+              </div>
+            </div>
+
+            <input id="nombreGeneral" type="text" value="DESCUENTO FCV" disabled placeholder="DESCUENTO FCV" />
+            <div class="sub">Obligatorio para ambos flujos.</div>
+          </div>
+
+          <div class="field hidden" id="initialsField">
+            <label for="eventInitials">Iniciales listas eventos</label>
+            <input id="eventInitials" type="text" maxlength="2" placeholder="FS" />
+            <div class="sub">
+              Solo <b>2 letras</b>. Ejemplo: Fernando Santos → <b>FS</b>.
+              Se usarán nombres como listas de productos tipo <b>FS_AVENE_0226</b>.
+            </div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <div class="toggle" id="clubToggle">
+            <input id="chkClub" type="checkbox" />
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <div style="font-size:12px; font-weight:950;">¿Es del CLUB?</div>
+              <div style="font-size:11px; color:var(--muted);">
+                Modo normal: si se marca, completa Grupo, Inscripto y Convenios fijos.
+              </div>
+            </div>
+          </div>
+
+          <div class="toggle" id="normalListToggle">
+            <input id="chkListas" type="checkbox" />
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <div style="font-size:12px; font-weight:950;">Listas por promo</div>
+              <div style="font-size:11px; color:var(--muted);">Modo normal: crea lista cuando EANS &gt; umbral</div>
+            </div>
+          </div>
+
+          <div class="small">
+            <label for="umbralEans" id="umbralLabel">Umbral EANS</label>
+            <input id="umbralEans" type="number" min="1" value="5" />
+          </div>
+
+          <div class="grow" id="normalListNameField">
+            <label for="nombreListaBase">Nombre base lista</label>
+            <input id="nombreListaBase" type="text" maxlength="12" placeholder="Ej: TACTICO" />
+            <div class="sub">
+              Modo normal: prefijo fijo <b>FS_</b>, base máxima <b>12</b> caracteres y largo final máximo <b>15</b>.
+            </div>
+            <div class="previewPill" id="listPreviewPill" style="display:none;">
+              Ejemplo:
+              <code id="listPreviewText">FS_TAC35_000</code>
+            </div>
+          </div>
+
+          <div class="grow hidden" id="eventsInfoField">
+            <div class="hintCard" id="eventsHint">
+              En <b>Eventos</b> la lista de productos siempre se genera por <b>MARCA</b> usando la hoja <b>CODIGO-MARCA</b>. La lista de locales usa el mismo umbral del campo numérico.
+            </div>
+          </div>
+        </div>
+
+        <div class="field" id="clubInfoField" style="margin-top:10px; display:none;">
+          <div class="toggle" style="margin-bottom:10px;">
+            <input id="chkClubConveniosEditar" type="checkbox" />
+            <div style="display:flex; flex-direction:column; gap:2px;">
+              <div style="font-size:12px; font-weight:950;">Editar convenios CLUB</div>
+              <div style="font-size:11px; color:var(--muted);">
+                Solo si activas esta opción podrás modificar el listado.
+              </div>
+            </div>
+          </div>
+
+          <label for="clubConveniosInput">Convenios CLUB</label>
+          <textarea id="clubConveniosInput" disabled>20003,20078,7830,7774,7587,6090,3801,3566,2308,882,880,879,878,877,5877</textarea>
+          <div class="sub">
+            Solo se permite separación por <b>coma</b>.
+          </div>
+          <div class="hintCard">
+            Cuando esté activo, en la hoja destino se completará:
+            <br><b>Grupo de Promociones (Grupo1|Grupo2)</b> = CLUB_NECESIDAD
+            <br><b>Inscripto</b> = 1
+            <br><b>Convenio Seleccionado</b> y <b>Código Convenio</b> con este listado.
+          </div>
+        </div>
+
+        <div class="btnbar" style="margin-top:12px;">
+          <button class="btn secondary" id="btnPreview" disabled>Visualizar</button>
+          <button class="btn" id="btnProcesar" disabled>Generar Excel</button>
+          <div style="flex:1; min-width:220px;">
+            <div id="status" class="status">
+              <span id="statusText">Cargando XLSX...</span>
+              <span class="hint" id="statusHint"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary" id="summaryWrap">
+          <div class="summaryH">
+            <strong>Resumen de generación</strong>
+            <span class="debugSmall" id="summaryWhen"></span>
+          </div>
+          <div class="summaryB">
+            <div class="card"><div class="k">Salida</div><div class="v" id="summaryOutName">-</div></div>
+            <div class="card"><div class="k">Flujo</div><div class="v" id="summaryTipos">-</div></div>
+            <div class="card"><div class="k">Promos / Campañas</div><div class="v" id="summaryPromos">-</div></div>
+            <div class="card"><div class="k">Listas</div><div class="v" id="summaryListas">-</div></div>
+            <div class="tableWrap"><table id="summaryTable"></table></div>
+          </div>
+        </div>
+
+        <details class="debugDetails" id="debugDetails">
+          <summary><span>Ver logs</span><span class="debugSmall" id="debugSummary">0 líneas</span></summary>
+          <div class="debugBody">
+            <div class="debugSmall" id="debugMeta"></div>
+            <div class="debugLog" id="debugLog"></div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <div class="procOverlay" id="procOverlay" aria-hidden="true">
+    <div class="procCard" role="dialog" aria-modal="true" aria-labelledby="procTitle">
+      <div class="procH"><strong id="procTitle">Procesando…</strong><div class="spark" aria-hidden="true"></div></div>
+      <div class="procB">
+        <div class="procLine"><div class="left"><b>Origen</b><span id="procOrigen">-</span></div><div class="right"><span class="spark"></span> leyendo</div></div>
+        <div class="procLine"><div class="left"><b>Base</b><span id="procBase">-</span></div><div class="right"><span class="spark"></span> clonando</div></div>
+        <div class="procLine"><div class="left"><b>Plan</b><span id="procPlan">-</span></div><div class="right"><span class="spark"></span> generando</div></div>
+        <div class="procLine"><div class="left"><b>Salida</b><span id="procOut">-</span></div><div class="right"><span class="spark"></span> empaquetando</div></div>
+      </div>
+      <div class="procFoot"><div class="small" id="procFootMeta"></div><div class="small">Tip: si el archivo es grande, puede tomar unos segundos.</div></div>
+    </div>
+  </div>
+
+  <div class="modalOverlay" id="regenModalOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="regenTitle">
+      <div class="modalH"><strong id="regenTitle">Archivo ya procesado</strong><button class="btn secondary" id="regenCloseBtn">Cerrar</button></div>
+      <div class="modalB"><p id="regenMsg"></p><div class="meta" id="regenMeta"></div></div>
+      <div class="modalF"><button class="btn secondary" id="regenCancelBtn">Cancelar</button><button class="btn danger" id="regenYesBtn">Regenerar igual</button></div>
+    </div>
+  </div>
+
+  <!-- Dependencia local del repo -->
+  <script src="./xlsx.full.min.js"></script>
+
+  <!-- Tu lógica -->
+  <script src="./app.js"></script>
+</body>
+</html>
