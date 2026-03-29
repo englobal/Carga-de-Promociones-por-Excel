@@ -2576,6 +2576,58 @@ function runPreview(){
   }
 }
 
+function renderPreviewCardsNominal(promos, coberturaTodos){
+  const cards = promos.map(p => {
+    const ean = (p.eans || [])[0] || '-';
+
+    return `
+      <div style="
+        border-radius:16px;
+        padding:16px;
+        margin-bottom:16px;
+        background:linear-gradient(135deg,#ffffff,#f1f5f9);
+        border:1px solid #e2e8f0;
+        box-shadow:0 12px 30px rgba(0,0,0,0.08);
+      ">
+        
+        <!-- HEADER -->
+        <div style="font-weight:900; font-size:16px; margin-bottom:10px;">
+          🧾 Promo N${p.numero} — NOMINAL
+        </div>
+
+        <!-- CONDICIONES -->
+        <div style="margin-bottom:12px;">
+          <div style="font-weight:800; color:#1d4ed8; margin-bottom:6px;">
+            🔷 Condiciones
+          </div>
+
+          <div style="padding-left:10px; font-size:13px;">
+            <div>📄 <b>Tipo documento:</b> Boleta</div>
+            <div>🏪 <b>Locales:</b> ${coberturaTodos ? 'EXC_LOCALES' : '-'}</div>
+            <div>📦 <b>Producto:</b> ${ean}</div>
+          </div>
+        </div>
+
+        <!-- APLICADORES -->
+        <div>
+          <div style="font-weight:800; color:#15803d; margin-bottom:6px;">
+            🟢 Aplicadores
+          </div>
+
+          <div style="padding-left:10px; font-size:13px;">
+            <div>💲 <b>Acción:</b> Fija precio</div>
+            <div>💰 <b>Monto:</b> $${p.precioFinal}</div>
+            <div>📦 <b>Producto:</b> ${ean}</div>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }).join('');
+
+  previewTable.innerHTML = `<div>${cards}</div>`;
+}
+
 // Con la separación en archivos, es mejor enganchar el botón por JS:
 document.addEventListener('click', (e) => {
   const btn = e.target?.closest?.('[data-preview-close]');
