@@ -2485,42 +2485,114 @@ function renderPreviewCardsNominal(promos, coberturaTodos){
 
     return `
       <div style="
-        border-radius:16px;
-        padding:16px;
-        margin-bottom:16px;
-        background:linear-gradient(135deg,#ffffff,#f1f5f9);
+        border-radius:18px;
+        padding:18px;
+        margin-bottom:18px;
+        background:#ffffff;
         border:1px solid #e2e8f0;
-        box-shadow:0 12px 30px rgba(0,0,0,0.08);
+        box-shadow:0 18px 40px rgba(0,0,0,0.08);
       ">
-        
+
         <!-- HEADER -->
-        <div style="font-weight:900; font-size:16px; margin-bottom:10px;">
-          🧾 Promo N${p.numero} — NOMINAL
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          margin-bottom:14px;
+        ">
+          <div style="font-weight:900; font-size:16px;">
+            Promo N${p.numero}
+          </div>
+          <div style="
+            font-size:11px;
+            font-weight:800;
+            padding:4px 8px;
+            border-radius:999px;
+            background:#dbeafe;
+            color:#1d4ed8;
+          ">
+            PRECIO FIJO
+          </div>
+        </div>
+
+        <!-- DESCRIPCIÓN -->
+        <div style="
+          font-size:12px;
+          color:#475569;
+          margin-bottom:14px;
+        ">
+          Vigencia: ${p.fechaInicio} → ${p.fechaFin}
         </div>
 
         <!-- CONDICIONES -->
-        <div style="margin-bottom:12px;">
-          <div style="font-weight:800; color:#1d4ed8; margin-bottom:6px;">
-            🔷 Condiciones
+        <div style="
+          border-radius:12px;
+          padding:12px;
+          margin-bottom:12px;
+          background:#f8fafc;
+          border:1px solid #e2e8f0;
+        ">
+          <div style="
+            font-size:12px;
+            font-weight:900;
+            margin-bottom:8px;
+            color:#334155;
+          ">
+            CONDICIONES
           </div>
 
-          <div style="padding-left:10px; font-size:13px;">
-            <div>📄 <b>Tipo documento:</b> Boleta</div>
-            <div>🏪 <b>Locales:</b> ${coberturaTodos ? 'EXC_LOCALES' : '-'}</div>
-            <div>📦 <b>Producto:</b> ${ean}</div>
+          <div style="display:flex; flex-direction:column; gap:6px; font-size:13px;">
+
+            <div>
+              📄 <b>Documento</b><br>
+              <span style="color:#475569">Tipo = Boleta</span>
+            </div>
+
+            <div>
+              🏪 <b>Locales</b><br>
+              <span style="color:#475569">
+                ${coberturaTodos ? 'Excluye lista EXC_LOCALES' : 'Todos los locales'}
+              </span>
+            </div>
+
+            <div>
+              📦 <b>Producto</b><br>
+              <span style="color:#475569">EAN = ${ean}</span>
+            </div>
+
           </div>
         </div>
 
         <!-- APLICADORES -->
-        <div>
-          <div style="font-weight:800; color:#15803d; margin-bottom:6px;">
-            🟢 Aplicadores
+        <div style="
+          border-radius:12px;
+          padding:12px;
+          background:#f0fdf4;
+          border:1px solid #bbf7d0;
+        ">
+          <div style="
+            font-size:12px;
+            font-weight:900;
+            margin-bottom:8px;
+            color:#166534;
+          ">
+            APLICADORES
           </div>
 
-          <div style="padding-left:10px; font-size:13px;">
-            <div>💲 <b>Acción:</b> Fija precio</div>
-            <div>💰 <b>Monto:</b> $${p.precioFinal}</div>
-            <div>📦 <b>Producto:</b> ${ean}</div>
+          <div style="display:flex; flex-direction:column; gap:6px; font-size:13px;">
+
+            <div>
+              💰 <b>Beneficio</b><br>
+              <span style="color:#166534">
+                Precio fijo: $${p.precioFinal}
+              </span>
+            </div>
+
+            <div>
+              📦 <b>Aplicado a</b><br>
+              <span style="color:#166534">EAN = ${ean}</span>
+            </div>
+
           </div>
         </div>
 
@@ -2528,7 +2600,7 @@ function renderPreviewCardsNominal(promos, coberturaTodos){
     `;
   }).join('');
 
-  previewTable.innerHTML = `<div>${cards}</div>`;
+  previewTable.innerHTML = `<div style="display:flex; flex-direction:column;">${cards}</div>`;
 }
 
 // Con la separación en archivos, es mejor enganchar el botón por JS:
