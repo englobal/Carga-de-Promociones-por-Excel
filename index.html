@@ -4,10 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Promos Builder (Normal / Eventos)</title>
-
   <link rel="stylesheet" href="./styles.css" />
 </head>
-
 <body>
   <div class="wrap">
     <div class="topbar">
@@ -176,9 +174,8 @@
 
           <label for="clubConveniosInput">Convenios CLUB</label>
           <textarea id="clubConveniosInput" disabled>20003,20078,7830,7774,7587,6090,3801,3566,2308,882,880,879,878,877,5877</textarea>
-          <div class="sub">
-            Solo se permite separación por <b>coma</b>.
-          </div>
+          <div class="sub">Solo se permite separación por <b>coma</b>.</div>
+
           <div class="hintCard">
             Cuando esté activo, en la hoja destino se completará:
             <br><b>Grupo de Promociones (Grupo1|Grupo2)</b> = CLUB_NECESIDAD
@@ -238,16 +235,34 @@
 
   <div class="modalOverlay" id="regenModalOverlay" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="regenTitle">
-      <div class="modalH"><strong id="regenTitle">Archivo ya procesado</strong><button class="btn secondary" id="regenCloseBtn">Cerrar</button></div>
-      <div class="modalB"><p id="regenMsg"></p><div class="meta" id="regenMeta"></div></div>
-      <div class="modalF"><button class="btn secondary" id="regenCancelBtn">Cancelar</button><button class="btn danger" id="regenYesBtn">Regenerar igual</button></div>
+      <div class="modalH">
+        <strong id="regenTitle">Archivo ya procesado</strong>
+        <button class="btn secondary" id="regenCloseBtn">Cerrar</button>
+      </div>
+      <div class="modalB">
+        <p id="regenMsg"></p>
+        <div class="meta" id="regenMeta"></div>
+      </div>
+      <div class="modalF">
+        <button class="btn secondary" id="regenCancelBtn">Cancelar</button>
+        <button class="btn danger" id="regenYesBtn">Regenerar igual</button>
+      </div>
     </div>
   </div>
 
-  <!-- Dependencia local del repo -->
-  <script src="./xlsx.full.min.js"></script>
+  <!-- Modal Preview (tal cual tu versión) -->
+  <div class="modalOverlay" id="previewModal">
+    <div class="modal" style="max-width:800px;">
+      <div class="modalH">
+        <strong>Vista previa de promociones</strong>
+        <button class="btn secondary" onclick="closePreview()">Cerrar</button>
+      </div>
+      <div class="modalB" id="previewContent"></div>
+    </div>
+  </div>
 
-  <!-- Tu lógica -->
+  <!-- Scripts (orden fijo) -->
+  <script src="./xlsx.full.min.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
