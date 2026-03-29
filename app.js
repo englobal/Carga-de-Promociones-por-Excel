@@ -2467,3 +2467,126 @@ btnPreview.addEventListener('click', runPreview);
 // entonces va aquí exactamente igual.
 
 // (fin de app.js)
+// ===== Preview (versión original que pegaste) =====
+
+// OJO: si ya agregaste otro listener antes, evitá duplicarlo.
+
+function closePreview(){
+  document.getElementById('previewModal').style.display = 'none';
+}
+
+function openPreview(html){
+  document.getElementById('previewContent').innerHTML = html;
+  document.getElementById('previewModal').style.display = 'flex';
+}
+
+function runPreview(){
+  console.log("modo:", modoSelect.value);
+  console.log("data:", cacheOrigenParsed);
+
+  try{
+    if(!cacheOrigenParsed) throw new Error('Carga Origen primero');
+
+    if(!modoSelect.value){
+      console.warn("modo vacío, usando NOMINAL por defecto");
+      modoSelect.value = "NOMINAL";
+    }
+
+    const { kept } = filterOrigenSkipRowsAnyCell(cacheOrigenParsed);
+
+    let tipos = [];
+    if (modoSelect.value === '__ALL__') {
+      tipos = detectTipoDescuentoOptions(cacheOrigenParsed.data).options;
+    } else {
+      tipos = [modoSelect.value];
+    }
+
+    let html = '';
+
+    tipos.forEach(tipo => {
+      const grouped = groupPromosByNumero(kept, tipo);
+
+      // ⚠️ SI FALLA, LO MOSTRAMOS
+      if(grouped.error){
+        html += `
+          <div style="padding:12px; margin-bottom:10px; background:#fee2e2; border-radius:10px;">
+            ❌ ${grouped.error}
+          </div>
+        `;
+        return;
+      }
+
+      const promos = grouped.promos || [];
+
+      // 🔥 SI NO HAY PROMOS → MOSTRAR MENSAJE
+      if(promos.length === 0){
+        html += `
+          <div style="padding:12px; margin-bottom:10px; background:#fef3c7; border-radius:10px;">
+            ⚠️ No hay promos para tipo <b>${tipo}</b>
+          </div>
+        `;
+        return;
+      }
+
+      promos.slice(0,10).forEach(p=>{
+        html += `
+          <div style="
+            margin-bottom:18px;
+            border-radius:14px;
+            border:1px solid #e2e8f0;
+            background:#f8fafc;
+            padding:14px;
+          ">
+            <div style="font-weight:900; margin-bottom:6px;">
+              ${tipo} → N${p.numero}
+            </div>
+
+            <div><b>EANs:</b> ${(p.eans || []).slice(0,3).join(', ')}</div>
+            <div><b>Fechas:</b> ${p.fechaInicio} → ${p.fechaFin}</div>
+
+            ${
+              p.precioFinal != null
+                ? `<div><b>Precio:</b> ${p.precioFinal}</div>`
+                : ''
+            }
+
+            ${
+              p.descuentoPct != null
+                ? `<div><b>%:</b> ${p.descuentoPct}</div>`
+                : ''
+            }
+          </div>
+        `;
+      });
+    });
+
+    console.log("HTML generado:", html.length);
+
+    // 🔥 SI QUEDA VACÍO → FORZAR MENSAJE
+    if(!html.trim()){
+      html = `
+        <div style="padding:20px;">
+          ⚠️ No se generó preview.<br><br>
+          Revisa:
+          <ul>
+            <li>Tipo de descuento coincide (NOMINAL, PORCENTUAL, etc)</li>
+            <li>Columnas del Excel están bien nombradas</li>
+            <li>No todas las filas fueron filtradas</li>
+          </ul>
+        </div>
+      `;
+    }
+
+    openPreview(html);
+
+  }catch(err){
+    console.error(err);
+    setStatus(err.message, 'err');
+  }
+}
+
+// Con la separación en archivos, es mejor enganchar el botón por JS:
+document.addEventListener('click', (e) => {
+  const btn = e.target?.closest?.('[data-preview-close]');
+  if (btn) closePreview();
+});
