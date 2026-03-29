@@ -1610,7 +1610,7 @@ function refreshUI(){
       pillArea.style.background = 'linear-gradient(135deg,#64748b,#334155)';
     }
   }
-  if (pillArea && pillArea.textContent !== area) {
+  if (pillArea && pillArea.textContent !== (AREA_RESPONSABLE || '-')) {
     pop(pillArea);
   }
   updateNormalListPreview();
@@ -1810,6 +1810,8 @@ fileOrigen.addEventListener('change', async (e)=>{
 
     if (currentSourceMode === SOURCE_MODE.NORMAL){
       cacheOrigenParsed = parseOrigenSheetFirst(wbOrigen);
+	  console.log('PARSE OK:', cacheOrigenParsed);
+      log('PARSE OK filas:', cacheOrigenParsed?.data?.length);
       const { options, keyTipo } = detectTipoDescuentoOptions(cacheOrigenParsed.data);
       const { skipped } = filterOrigenSkipRowsAnyCell(cacheOrigenParsed);
       log(`SKIP(any cell): se detectaron ${skipped} filas para ignorar (NO CONSIDERAR / PRECIO FIJO)`);
