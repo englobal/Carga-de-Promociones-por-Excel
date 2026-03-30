@@ -2840,5 +2840,5 @@ function exportPreviewPDF(){
 // Con la separación en archivos, es mejor enganchar el botón por JS:
 document.addEventListener('click', (e) => {
   const btn = e.target?.closest?.('[data-preview-close]');
-  if (btn) closePreview();
+  if (btn) closePreviewModal();
 });
