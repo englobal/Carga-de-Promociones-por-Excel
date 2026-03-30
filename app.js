@@ -919,11 +919,32 @@ function buildPromoModel(p, tipo, coberturaTodos){
   }
 
   if(tipo === 'PACK 2X1'){
-    tituloTipo = 'Pack 2x1';
-    tipoBeneficio = 'PRECIO PACK';
-    valor = `$${p.precioFinal}`;
-    extra.push(`Cantidad = ${p.unidadesPack}`);
-  }
+  tituloTipo = 'Pack 2x1';
+  tipoBeneficio = 'PRECIO PACK';
+  valor = `$${p.precioFinal}`;
+
+  return {
+    numero: p.numero,
+    tipo,
+    tituloTipo,
+    vigencia: `${p.fechaInicio} → ${p.fechaFin}`,
+
+    condiciones: {
+      documento: 'Boleta',
+      locales: coberturaTodos ? 'EXC_LOCALES' : 'TODOS',
+      ean,
+      extra: [`Cantidad cada ${p.unidadesPack}`]
+    },
+
+    aplicadores: {
+      tipo: tipoBeneficio,
+      valor,
+      ean,
+      porUnidad: 'SI',
+      extra: [`Cantidad Beneficio = ${p.unidadesPack}`]
+    }
+  };
+}
 
   if(tipo === 'DESCUENTO 2DA UNIDAD (%)'){
     tituloTipo = 'Descuento 2da Unidad';
@@ -956,10 +977,22 @@ function buildPromoModel(p, tipo, coberturaTodos){
 }
 
 function renderPromoCard(m){
-  const extraHtml = (m.aplicadores.extra || [])
+
+  // 🔹 Extras aplicadores
+  const extraAplicadores = (m.aplicadores.extra || [])
     .map(x => `
       <div style="display:flex; gap:6px; margin-top:4px;">
-        <div style="width:120px;">Extra</div>
+        <div style="width:120px;">Regla</div>
+        <div>=</div>
+        <div>${x}</div>
+      </div>
+    `).join('');
+
+  // 🔹 Extras condiciones
+  const extraCondiciones = (m.condiciones.extra || [])
+    .map(x => `
+      <div style="display:flex; gap:6px; margin-top:4px;">
+        <div style="width:120px;">Condición</div>
         <div>=</div>
         <div>${x}</div>
       </div>
@@ -975,42 +1008,90 @@ function renderPromoCard(m){
       box-shadow:0 10px 28px rgba(0,0,0,0.08);
     ">
 
-      <div style="display:flex; justify-content:space-between;">
+      <!-- HEADER -->
+      <div style="display:flex; justify-content:space-between; align-items:center;">
         <b>Promo N${m.numero}</b>
+
         <span style="
           font-size:10px;
           padding:3px 8px;
           border-radius:999px;
           background:#e0f2fe;
+          font-weight:800;
         ">
           ${m.aplicadores.tipo}
         </span>
       </div>
 
+      <!-- TIPO -->
       <div style="margin:6px 0; font-weight:800;">
         ${m.tituloTipo}
       </div>
 
+      <!-- VIGENCIA -->
       <div style="font-size:11px; color:#64748b;">
         Vigencia: ${m.vigencia}
       </div>
 
-      <div style="margin-top:10px; border:1px solid #e2e8f0;">
-        <div style="background:#f1f5f9; padding:6px;">CONDICIONES</div>
-        <div style="padding:10px;">
-          Documento = ${m.condiciones.documento}<br>
-          Locales = ${m.condiciones.locales}<br>
-          EAN = ${m.condiciones.ean}
+      <!-- CONDICIONES -->
+      <div style="margin-top:10px; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden;">
+        <div style="background:#f1f5f9; padding:6px; font-weight:800;">
+          CONDICIONES
+        </div>
+
+        <div style="padding:10px; font-size:12px;">
+
+          <div style="display:flex; gap:6px;">
+            <div style="width:120px;">Documento</div>
+            <div>=</div>
+            <div>${m.condiciones.documento}</div>
+          </div>
+
+          <div style="display:flex; gap:6px; margin-top:4px;">
+            <div style="width:120px;">Locales</div>
+            <div>=</div>
+            <div>${m.condiciones.locales}</div>
+          </div>
+
+          <div style="display:flex; gap:6px; margin-top:4px;">
+            <div style="width:120px;">EAN</div>
+            <div>=</div>
+            <div>${m.condiciones.ean}</div>
+          </div>
+
+          ${extraCondiciones}
+
         </div>
       </div>
 
-      <div style="margin-top:10px; border:1px solid #bbf7d0;">
-        <div style="background:#dcfce7; padding:6px;">APLICADORES</div>
-        <div style="padding:10px;">
-          Beneficio = ${m.aplicadores.valor}<br>
-          Aplicado a = ${m.aplicadores.ean}<br>
-          Por unidad = ${m.aplicadores.porUnidad}
-          ${extraHtml}
+      <!-- APLICADORES -->
+      <div style="margin-top:10px; border:1px solid #bbf7d0; border-radius:10px; overflow:hidden;">
+        <div style="background:#dcfce7; padding:6px; font-weight:800;">
+          APLICADORES
+        </div>
+
+        <div style="padding:10px; font-size:12px;">
+
+          <div style="display:flex; gap:6px;">
+            <div style="width:120px;">Beneficio</div>
+            <div>=</div>
+            <div>${m.aplicadores.valor}</div>
+          </div>
+
+          <div style="display:flex; gap:6px; margin-top:4px;">
+            <div style="width:120px;">Aplicado a</div>
+            <div>=</div>
+            <div>${m.aplicadores.ean}</div>
+          </div>
+
+          <div style="display:flex; gap:6px; margin-top:4px;">
+            <div style="width:120px;">Por unidad</div>
+            <div>=</div>
+            <div>${m.aplicadores.porUnidad}</div>
+          </div>
+
+          ${extraAplicadores}
+
         </div>
       </div>
 
