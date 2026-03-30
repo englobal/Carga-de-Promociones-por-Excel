@@ -2508,12 +2508,12 @@ function renderPreviewCardsNominal(promos, coberturaTodos){
 
     return `
       <div style="
-        border-radius:18px;
-        padding:18px;
-        margin-bottom:18px;
+        border-radius:16px;
+        padding:16px;
+        margin-bottom:14px;
         background:#ffffff;
         border:1px solid #e2e8f0;
-        box-shadow:0 18px 40px rgba(0,0,0,0.08);
+        box-shadow:0 10px 28px rgba(0,0,0,0.08);
       ">
 
         <!-- HEADER -->
@@ -2521,15 +2521,16 @@ function renderPreviewCardsNominal(promos, coberturaTodos){
           display:flex;
           justify-content:space-between;
           align-items:center;
-          margin-bottom:14px;
+          margin-bottom:12px;
         ">
-          <div style="font-weight:900; font-size:16px;">
+          <div style="font-weight:900; font-size:14px;">
             Promo N${p.numero}
           </div>
+
           <div style="
-            font-size:11px;
+            font-size:10px;
             font-weight:800;
-            padding:4px 8px;
+            padding:3px 8px;
             border-radius:999px;
             background:#dbeafe;
             color:#1d4ed8;
@@ -2538,49 +2539,50 @@ function renderPreviewCardsNominal(promos, coberturaTodos){
           </div>
         </div>
 
-        <!-- DESCRIPCIÓN -->
+        <!-- VIGENCIA -->
         <div style="
-          font-size:12px;
-          color:#475569;
-          margin-bottom:14px;
+          font-size:11px;
+          color:#64748b;
+          margin-bottom:12px;
         ">
-          Vigencia: ${p.fechaInicio} → ${p.fechaFin}
+          ${p.fechaInicio} → ${p.fechaFin}
         </div>
 
-        <!-- CONDICIONES -->
+        <!-- CONDICIONES (ESTILO SAP) -->
         <div style="
-          border-radius:12px;
-          padding:12px;
-          margin-bottom:12px;
-          background:#f8fafc;
           border:1px solid #e2e8f0;
+          border-radius:10px;
+          overflow:hidden;
+          margin-bottom:10px;
         ">
           <div style="
-            font-size:12px;
+            background:#f1f5f9;
+            font-size:11px;
             font-weight:900;
-            margin-bottom:8px;
+            padding:6px 10px;
             color:#334155;
           ">
             CONDICIONES
           </div>
 
-          <div style="display:flex; flex-direction:column; gap:6px; font-size:13px;">
+          <div style="padding:10px; font-size:12px;">
 
-            <div>
-              📄 <b>Documento</b><br>
-              <span style="color:#475569">Tipo = Boleta</span>
+            <div style="display:flex; gap:6px;">
+              <div style="width:120px; color:#64748b;">Documento</div>
+              <div>=</div>
+              <div>Boleta</div>
             </div>
 
-            <div>
-              🏪 <b>Locales</b><br>
-              <span style="color:#475569">
-                ${coberturaTodos ? 'Excluye lista EXC_LOCALES' : 'Todos los locales'}
-              </span>
+            <div style="display:flex; gap:6px; margin-top:4px;">
+              <div style="width:120px; color:#64748b;">Locales</div>
+              <div>=</div>
+              <div>${coberturaTodos ? 'EXC_LOCALES' : 'Todos'}</div>
             </div>
 
-            <div>
-              📦 <b>Producto</b><br>
-              <span style="color:#475569">EAN = ${ean}</span>
+            <div style="display:flex; gap:6px; margin-top:4px;">
+              <div style="width:120px; color:#64748b;">EAN</div>
+              <div>=</div>
+              <div>${ean}</div>
             </div>
 
           </div>
@@ -2588,38 +2590,39 @@ function renderPreviewCardsNominal(promos, coberturaTodos){
 
         <!-- APLICADORES -->
         <div style="
-          border-radius:12px;
-          padding:12px;
-          background:#f0fdf4;
           border:1px solid #bbf7d0;
+          border-radius:10px;
+          overflow:hidden;
         ">
           <div style="
-            font-size:12px;
+            background:#dcfce7;
+            font-size:11px;
             font-weight:900;
-            margin-bottom:8px;
+            padding:6px 10px;
             color:#166534;
           ">
             APLICADORES
           </div>
 
-          <div style="display:flex; flex-direction:column; gap:6px; font-size:13px;">
+          <div style="padding:10px; font-size:12px;">
 
-            <div>
-              💰 <b>Beneficio</b><br>
-              <span style="color:#166534">
-                Precio fijo: $${p.precioFinal}
-              </span>
+            <div style="display:flex; gap:6px;">
+              <div style="width:120px; color:#15803d;">Beneficio</div>
+              <div>=</div>
+              <div>$${p.precioFinal}</div>
             </div>
 
-            <div>
-			  📦 <b>Aplicado a</b><br>
-			  <span style="color:#166534">EAN = ${ean}</span>
-			</div>
+            <div style="display:flex; gap:6px; margin-top:4px;">
+              <div style="width:120px; color:#15803d;">Aplicado a</div>
+              <div>=</div>
+              <div>${ean}</div>
+            </div>
 
-			<div>
-			  🔢 <b>Por unidad</b><br>
-			  <span style="color:#166534">SI</span>
-			</div>
+            <div style="display:flex; gap:6px; margin-top:4px;">
+              <div style="width:120px; color:#15803d;">Por unidad</div>
+              <div>=</div>
+              <div>SI</div>
+            </div>
 
           </div>
         </div>
@@ -2628,7 +2631,7 @@ function renderPreviewCardsNominal(promos, coberturaTodos){
     `;
   }).join('');
 
-  previewTable.innerHTML = `<div style="display:flex; flex-direction:column;">${cards}</div>`;
+  previewTable.innerHTML = `<div>${cards}</div>`;
 }
 
 // Con la separación en archivos, es mejor enganchar el botón por JS:
