@@ -2209,7 +2209,6 @@ clubConveniosInput.disabled = true;
 applyNombreGeneralDefaultMode(true);
 applySourceModeUI(SOURCE_MODE.NORMAL);
 // ================= PREVIEW =================
-// ================= PREVIEW =================
 const previewModalHTML = `
   <div class="modalOverlay" id="previewOverlay" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
