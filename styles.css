@@ -412,9 +412,18 @@ details.debugDetails > summary::-webkit-details-marker { display:none; }
 }
 
 .modalOverlay{
-  position:fixed; inset:0; background: rgba(15, 23, 42, .55);
-  display:none; align-items:center; justify-content:center;
-  padding:18px; z-index:9999;
+  position:fixed; 
+  inset:0; 
+  background: rgba(15, 23, 42, .55);
+
+  display:none; 
+  align-items:center; 
+  justify-content:center;
+
+  padding:18px; 
+  z-index:9999;
+
+  overflow:hidden;           /* 👈 NUEVO (IMPORTANTE) */
 }
 .modal{
   width:min(680px, 100%);
@@ -491,4 +500,7 @@ details.debugDetails > summary::-webkit-details-marker { display:none; }
   border:1px solid rgba(148,163,184,.25);
   border-radius:8px;
   padding:2px 6px;
+}
+body.modal-open{
+  overflow:hidden;
 }
