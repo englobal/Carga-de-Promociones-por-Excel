@@ -2600,11 +2600,10 @@ function renderPreviewTableEventos(rows){
 }
 // PREVIEW
 async function runPreview(){
-  currentSourceMode = SOURCE_MODE.NORMAL; // 🔥 FIX CLAVE
 
   log('RUN PREVIEW');
   console.log('RUN PREVIEW START');
-  console.log('ANTES DE VALIDACIONES');
+
   try{
     if (!wbOrigen) throw new Error('Carga primero el Excel Origen.');
     if (currentSourceMode === SOURCE_MODE.NORMAL && !cacheOrigenParsed) throw new Error('Origen no está parseado todavía.');
@@ -2614,11 +2613,14 @@ async function runPreview(){
     previewOrigenName.textContent = lastOrigenMeta?.name || origenFileName || '(sin nombre)';
     previewNombreGeneral.textContent = nombreGeneralInput.value.trim();
 
+    // ================= NORMAL =================
     if (currentSourceMode === SOURCE_MODE.NORMAL){
+
       const planTipos = buildGenerationPlan().map(t => String(t).toUpperCase());
       const { kept: origenFiltrado } = filterOrigenSkipRowsAnyCell(cacheOrigenParsed);
 
       const promosByTipo = new Map();
+
       for (const tipo of planTipos){
         const grouped = groupPromosByNumero(origenFiltrado, tipo);
         if (grouped.error) throw new Error(grouped.error);
@@ -2628,29 +2630,31 @@ async function runPreview(){
       const umbral = Math.max(1, parseInt(umbralEans.value || '5', 10));
       const usarListas = !!chkListas.checked;
 
+      // ✅ SOLO UNA VEZ (FIX ERROR)
       const coberturaTodos = detectCoberturaLocalesTodos(origenFiltrado);
+
       previewCobertura.textContent = coberturaTodos ? 'TODOS (AZ=EXC_LOCALES)' : '(no aplica)';
       previewClub.textContent = chkClub.checked ? `SI (${getClubConveniosDataSafe().list.length} convenios)` : 'NO';
       previewListas.textContent = usarListas ? `SI (umbral=${umbral})` : 'NO';
       previewModo.textContent = `Normal · ${planTipos.join(' + ')}`;
 
-      const tipo = planTipos[0]; // 🔥 SOLO UN TIPO ACTIVO
-	  const promos = promosByTipo.get(tipo) || [];
+      // 🔥 usamos SOLO el tipo activo
+      const tipo = planTipos[0];
+      const promos = promosByTipo.get(tipo) || [];
 
-	  const coberturaTodos = detectCoberturaLocalesTodos(origenFiltrado);
+      // 🔥 modelo único
+      const models = promos.map(p =>
+        buildPromoModel(p, tipo, coberturaTodos)
+      );
 
-		// 🔥 MODELO ÚNICO (sirve para TODOS los tipos)
-	  const models = promos.map(p =>
-		  buildPromoModel(p, tipo, coberturaTodos)
-		);
+      // 🔥 render único
+      previewTable.innerHTML = models.map(renderPromoCard).join('');
 
-		// 🔥 RENDER ÚNICO (sin ifs, sin duplicación)
-		previewTable.innerHTML = models.map(renderPromoCard).join('');
       openPreviewModal();
       return;
     }
 
-    // EVENTOS
+    // ================= EVENTOS =================
     const selectedUser = eventUserSelect.value;
     const initials = eventInitials.value;
 
@@ -2674,10 +2678,12 @@ async function runPreview(){
 
     const rows = buildPreviewRowsEventos({ promos: model.promos, umbralLocales });
     renderPreviewTableEventos(rows);
+
     openPreviewModal();
+
   } catch(err){
-	  console.error('ERROR PREVIEW:', err);
-      alert(err.message);
+    console.error('ERROR PREVIEW:', err);
+    alert(err.message);
     setStatus('Preview: ' + (err?.message || err), 'err');
     log(err?.stack || String(err));
   }
