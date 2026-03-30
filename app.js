@@ -2284,10 +2284,14 @@ const previewTable = document.getElementById('previewTable');
 function openPreviewModal(){
   previewOverlay.style.display = 'flex';
   previewOverlay.setAttribute('aria-hidden','false');
+
+  document.body.classList.add('modal-open'); // 👈 NUEVO
 }
 function closePreviewModal(){
   previewOverlay.style.display = 'none';
   previewOverlay.setAttribute('aria-hidden','true');
+
+  document.body.classList.remove('modal-open'); // 👈 NUEVO
 }
 previewCloseBtn.addEventListener('click', closePreviewModal);
 previewCloseBtn2.addEventListener('click', closePreviewModal);
