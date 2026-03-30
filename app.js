@@ -2683,16 +2683,18 @@ async function runPreview(){
 // ===== Preview (versión original que pegaste) =====
 
 // OJO: si ya agregaste otro listener antes, evitá duplicarlo.
-btnPreview.addEventListener('click', () => {
-  console.log('CLICK PREVIEW');
+if (btnPreview) {
+  btnPreview.addEventListener('click', () => {
+    console.log('CLICK PREVIEW');
 
-  try{
-    runPreview();
-  }catch(err){
-    console.error('ERROR CLICK:', err);
-    alert(err.message);
-  }
-});
+    try{
+      runPreview();
+    }catch(err){
+      console.error('ERROR CLICK:', err);
+      alert(err.message);
+    }
+  });
+}
 
 function renderPreviewCardsNominal(promos, coberturaTodos){
   const cards = promos.map(p => {
