@@ -2214,8 +2214,7 @@ const previewModalHTML = `
   <div class="modalOverlay" id="previewOverlay" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
       <div class="modalH">
-        <strong id="previewTitle">Visualización</strong>
-        <button class="btn secondary" id="previewCloseBtn">Cerrar</button>
+        <strong id="previewTitle">Detalle de Promociones</strong>
       </div>
       <div class="modalB">
         <p style="margin:0 0 10px 0;">
