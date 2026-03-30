@@ -898,6 +898,158 @@ function fillSimpleListSheet(wbOut, sheetNameInput, listRequests){
   return sheetName;
 }
 
+function buildPromoModel(p, tipo, coberturaTodos){
+  const ean = (p.eans || [])[0] || '-';
+
+  return {
+    numero: p.numero,
+    tipo,
+
+    tituloTipo:
+      tipo === 'NOMINAL'
+        ? 'Precio Fijo a Producto'
+        : tipo === 'PORCENTUAL'
+        ? 'Porcentaje a Producto'
+        : tipo,
+
+    vigencia: `${p.fechaInicio} → ${p.fechaFin}`,
+
+    condiciones: {
+      documento: 'Boleta',
+      locales: coberturaTodos ? 'EXC_LOCALES' : 'TODOS',
+      ean
+    },
+
+    aplicadores: {
+      tipo:
+        tipo === 'NOMINAL'
+          ? 'PRECIO FIJO'
+          : 'PORCENTAJE',
+
+      valor:
+        tipo === 'NOMINAL'
+          ? `$${p.precioFinal}`
+          : `${p.descuentoPct}%`,
+
+      ean,
+      porUnidad: 'SI'
+    }
+  };
+}
+
+function renderPromoCard(model){
+  return `
+    <div style="
+      border-radius:16px;
+      padding:16px;
+      margin-bottom:14px;
+      background:#ffffff;
+      border:1px solid #e2e8f0;
+      box-shadow:0 10px 28px rgba(0,0,0,0.08);
+    ">
+
+      <!-- HEADER -->
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:10px;
+      ">
+        <div style="font-weight:900; font-size:14px;">
+          Promo N${model.numero}
+        </div>
+
+        <div style="
+          font-size:10px;
+          font-weight:800;
+          padding:3px 8px;
+          border-radius:999px;
+          background:${model.tipo === 'NOMINAL' ? '#dbeafe' : '#ede9fe'};
+          color:${model.tipo === 'NOMINAL' ? '#1d4ed8' : '#5b21b6'};
+        ">
+          ${model.aplicadores.tipo}
+        </div>
+      </div>
+
+      <div style="font-size:12px; font-weight:800; margin-bottom:6px;">
+        ${model.tituloTipo}
+      </div>
+
+      <div style="font-size:11px; color:#64748b; margin-bottom:12px;">
+        Vigencia: ${model.vigencia}
+      </div>
+
+      <!-- CONDICIONES -->
+      <div style="
+        border:1px solid #e2e8f0;
+        border-radius:10px;
+        overflow:hidden;
+        margin-bottom:10px;
+      ">
+        <div style="background:#f1f5f9; font-size:11px; font-weight:900; padding:6px 10px;">
+          CONDICIONES
+        </div>
+
+        <div style="padding:10px; font-size:12px;">
+
+          <div style="display:flex; gap:6px;">
+            <div style="width:120px;">Documento</div>
+            <div>=</div>
+            <div>${model.condiciones.documento}</div>
+          </div>
+
+          <div style="display:flex; gap:6px; margin-top:4px;">
+            <div style="width:120px;">Locales</div>
+            <div>=</div>
+            <div>${model.condiciones.locales}</div>
+          </div>
+
+          <div style="display:flex; gap:6px; margin-top:4px;">
+            <div style="width:120px;">EAN</div>
+            <div>=</div>
+            <div>${model.condiciones.ean}</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- APLICADORES -->
+      <div style="
+        border:1px solid #bbf7d0;
+        border-radius:10px;
+        overflow:hidden;
+      ">
+        <div style="background:#dcfce7; font-size:11px; font-weight:900; padding:6px 10px;">
+          APLICADORES
+        </div>
+
+        <div style="padding:10px; font-size:12px;">
+
+          <div style="display:flex; gap:6px;">
+            <div style="width:120px;">Beneficio</div>
+            <div>=</div>
+            <div>${model.aplicadores.valor}</div>
+          </div>
+
+          <div style="display:flex; gap:6px; margin-top:4px;">
+            <div style="width:120px;">Aplicado a</div>
+            <div>=</div>
+            <div>${model.aplicadores.ean}</div>
+          </div>
+
+          <div style="display:flex; gap:6px; margin-top:4px;">
+            <div style="width:120px;">Por unidad</div>
+            <div>=</div>
+            <div>${model.aplicadores.porUnidad}</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  `;
+}
+
 function fillMechanicSheet(wbOut, sheetName, promos, nombreGeneral, descripcion, tipo, listaByPromoNumero, coberturaTodos, clubData){
   const aoa = readSheetAsAOA(wbOut, sheetName);
   const { map: headerMap, headerRowIdx } = buildHeaderMapFromTemplate(aoa, 1);
@@ -2209,6 +2361,7 @@ clubConveniosInput.disabled = true;
 applyNombreGeneralDefaultMode(true);
 applySourceModeUI(SOURCE_MODE.NORMAL);
 // ================= PREVIEW =================
+// ================= PREVIEW =================
 const previewModalHTML = `
   <div class="modalOverlay" id="previewOverlay" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
@@ -2436,7 +2589,12 @@ async function runPreview(){
       const promos = promosByTipo.get('NOMINAL') || [];
       const coberturaTodos = detectCoberturaLocalesTodos(origenFiltrado);
       
-        renderPreviewCardsNominal(promos, coberturaTodos);
+        const models = promos.map(p =>
+		  buildPromoModel(p, planTipos[0], coberturaTodos)
+		);
+
+		const html = models.map(renderPromoCard).join('');
+		previewTable.innerHTML = `<div>${html}</div>`;
       } else {
         renderPreviewTableNormal(rows); // fallback
       }
@@ -2507,12 +2665,12 @@ function renderPreviewCardsNominal(promos, coberturaTodos){
 
     return `
       <div style="
-        border-radius:16px;
-        padding:16px;
-        margin-bottom:14px;
+        border-radius:18px;
+        padding:18px;
+        margin-bottom:18px;
         background:#ffffff;
         border:1px solid #e2e8f0;
-        box-shadow:0 10px 28px rgba(0,0,0,0.08);
+        box-shadow:0 18px 40px rgba(0,0,0,0.08);
       ">
 
         <!-- HEADER -->
@@ -2520,16 +2678,15 @@ function renderPreviewCardsNominal(promos, coberturaTodos){
           display:flex;
           justify-content:space-between;
           align-items:center;
-          margin-bottom:12px;
+          margin-bottom:14px;
         ">
-          <div style="font-weight:900; font-size:14px;">
+          <div style="font-weight:900; font-size:16px;">
             Promo N${p.numero}
           </div>
-
           <div style="
-            font-size:10px;
+            font-size:11px;
             font-weight:800;
-            padding:3px 8px;
+            padding:4px 8px;
             border-radius:999px;
             background:#dbeafe;
             color:#1d4ed8;
@@ -2538,50 +2695,49 @@ function renderPreviewCardsNominal(promos, coberturaTodos){
           </div>
         </div>
 
-        <!-- VIGENCIA -->
+        <!-- DESCRIPCIÓN -->
         <div style="
-          font-size:11px;
-          color:#64748b;
-          margin-bottom:12px;
+          font-size:12px;
+          color:#475569;
+          margin-bottom:14px;
         ">
-          ${p.fechaInicio} → ${p.fechaFin}
+          Vigencia: ${p.fechaInicio} → ${p.fechaFin}
         </div>
 
-        <!-- CONDICIONES (ESTILO SAP) -->
+        <!-- CONDICIONES -->
         <div style="
+          border-radius:12px;
+          padding:12px;
+          margin-bottom:12px;
+          background:#f8fafc;
           border:1px solid #e2e8f0;
-          border-radius:10px;
-          overflow:hidden;
-          margin-bottom:10px;
         ">
           <div style="
-            background:#f1f5f9;
-            font-size:11px;
+            font-size:12px;
             font-weight:900;
-            padding:6px 10px;
+            margin-bottom:8px;
             color:#334155;
           ">
             CONDICIONES
           </div>
 
-          <div style="padding:10px; font-size:12px;">
+          <div style="display:flex; flex-direction:column; gap:6px; font-size:13px;">
 
-            <div style="display:flex; gap:6px;">
-              <div style="width:120px; color:#64748b;">Documento</div>
-              <div>=</div>
-              <div>Boleta</div>
+            <div>
+              📄 <b>Documento</b><br>
+              <span style="color:#475569">Tipo = Boleta</span>
             </div>
 
-            <div style="display:flex; gap:6px; margin-top:4px;">
-              <div style="width:120px; color:#64748b;">Locales</div>
-              <div>=</div>
-              <div>${coberturaTodos ? 'EXC_LOCALES' : 'Todos'}</div>
+            <div>
+              🏪 <b>Locales</b><br>
+              <span style="color:#475569">
+                ${coberturaTodos ? 'Excluye lista EXC_LOCALES' : 'Todos los locales'}
+              </span>
             </div>
 
-            <div style="display:flex; gap:6px; margin-top:4px;">
-              <div style="width:120px; color:#64748b;">EAN</div>
-              <div>=</div>
-              <div>${ean}</div>
+            <div>
+              📦 <b>Producto</b><br>
+              <span style="color:#475569">EAN = ${ean}</span>
             </div>
 
           </div>
@@ -2589,39 +2745,38 @@ function renderPreviewCardsNominal(promos, coberturaTodos){
 
         <!-- APLICADORES -->
         <div style="
+          border-radius:12px;
+          padding:12px;
+          background:#f0fdf4;
           border:1px solid #bbf7d0;
-          border-radius:10px;
-          overflow:hidden;
         ">
           <div style="
-            background:#dcfce7;
-            font-size:11px;
+            font-size:12px;
             font-weight:900;
-            padding:6px 10px;
+            margin-bottom:8px;
             color:#166534;
           ">
             APLICADORES
           </div>
 
-          <div style="padding:10px; font-size:12px;">
+          <div style="display:flex; flex-direction:column; gap:6px; font-size:13px;">
 
-            <div style="display:flex; gap:6px;">
-              <div style="width:120px; color:#15803d;">Beneficio</div>
-              <div>=</div>
-              <div>$${p.precioFinal}</div>
+            <div>
+              💰 <b>Beneficio</b><br>
+              <span style="color:#166534">
+                Precio fijo: $${p.precioFinal}
+              </span>
             </div>
 
-            <div style="display:flex; gap:6px; margin-top:4px;">
-              <div style="width:120px; color:#15803d;">Aplicado a</div>
-              <div>=</div>
-              <div>${ean}</div>
-            </div>
+            <div>
+			  📦 <b>Aplicado a</b><br>
+			  <span style="color:#166534">EAN = ${ean}</span>
+			</div>
 
-            <div style="display:flex; gap:6px; margin-top:4px;">
-              <div style="width:120px; color:#15803d;">Por unidad</div>
-              <div>=</div>
-              <div>SI</div>
-            </div>
+			<div>
+			  🔢 <b>Por unidad</b><br>
+			  <span style="color:#166534">SI</span>
+			</div>
 
           </div>
         </div>
@@ -2630,7 +2785,7 @@ function renderPreviewCardsNominal(promos, coberturaTodos){
     `;
   }).join('');
 
-  previewTable.innerHTML = `<div>${cards}</div>`;
+  previewTable.innerHTML = `<div style="display:flex; flex-direction:column;">${cards}</div>`;
 }
 
 // Con la separación en archivos, es mejor enganchar el botón por JS:
