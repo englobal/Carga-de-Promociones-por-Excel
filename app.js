@@ -940,7 +940,7 @@ function buildPromoModel(p, tipo, coberturaTodos){
       tipo: tipoBeneficio,
       valor,
       ean,
-      porUnidad: 'SI',
+      porUnidad: tipo === 'PORCENTUAL' ? '' : 'SI',
       extra: [`Cantidad Beneficio = ${p.unidadesPack}`]
     }
   };
@@ -970,7 +970,7 @@ function buildPromoModel(p, tipo, coberturaTodos){
       tipo: tipoBeneficio,
       valor,
       ean,
-      porUnidad: 'SI',
+      porUnidad: tipo === 'PORCENTUAL' ? '' : 'SI',
       extra
     }
   };
@@ -1084,11 +1084,13 @@ function renderPromoCard(m){
             <div>${m.aplicadores.ean}</div>
           </div>
 
-          <div style="display:flex; gap:6px; margin-top:4px;">
-            <div style="width:120px;">Por unidad</div>
-            <div>=</div>
-            <div>${m.aplicadores.porUnidad}</div>
-          </div>
+          ${m.aplicadores.porUnidad ? `
+		  <div style="display:flex; gap:6px; margin-top:4px;">
+		    <div style="width:120px;">Por unidad</div>
+		    <div>=</div>
+		    <div>${m.aplicadores.porUnidad}</div>
+		  </div>
+		  ` : ''}
 
           ${extraAplicadores}
 
@@ -2579,7 +2581,7 @@ function renderPreviewTableEventos(rows){
     </tbody>
   `;
 }
-// PREVIEW
+// ================= PREVIEW =================
 async function runPreview(){
 
   log('RUN PREVIEW');
@@ -2608,12 +2610,14 @@ async function runPreview(){
         promosByTipo.set(tipo, grouped.promos || []);
       }
 
-      previewModo.textContent = `Normal · ${planTipos.join(' + ')}`;
-
       const tipo = planTipos[0];
       const promos = promosByTipo.get(tipo) || [];
-
       const coberturaTodos = detectCoberturaLocalesTodos(origenFiltrado);
+
+      previewModo.textContent = `Normal · ${tipo}`;
+      previewCobertura.textContent = coberturaTodos ? 'EXC_LOCALES' : 'Todos';
+      previewClub.textContent = chkClub.checked ? 'SI' : 'NO';
+      previewListas.textContent = chkListas.checked ? 'SI' : 'NO';
 
       const models = promos.map(p =>
         buildPromoModel(p, tipo, coberturaTodos)
@@ -2643,13 +2647,35 @@ async function runPreview(){
     );
 
     previewModo.textContent = `Eventos · ${selectedUser}`;
+    previewCobertura.textContent = '(n/a)';
+    previewClub.textContent = '(n/a)';
+    previewListas.textContent = `Prod=${model.productListRequests.length} / Loc=${model.localListRequests.length}`;
 
-    const rows = buildPreviewRowsEventos({
-      promos: model.promos,
-      umbralLocales
-    });
+    const models = model.promos.map(p => ({
+      numero: p.numero,
+      tipo: 'PORCENTUAL',
+      tituloTipo: 'Evento Porcentual',
+      vigencia: `${p.fechaInicio} → ${p.fechaFin}`,
 
-    renderPreviewTableEventos(rows);
+      condiciones: {
+        documento: 'Boleta',
+        locales: p.localListName || (p.locales || []).join(','),
+        ean: p.productListName || 'Lista'
+      },
+
+      aplicadores: {
+        tipo: 'PORCENTAJE',
+        valor: `${p.discount.percent}%`,
+        ean: p.productListName || '',
+        porUnidad: '', // 👈 correcto
+        extra: [
+          `Usuario RC = ${p.usuario}`,
+          `Marca = ${p.marcaRaw}`
+        ]
+      }
+    }));
+
+    previewTable.innerHTML = models.map(renderPromoCard).join('');
 
     openPreviewModal();
 
