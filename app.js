@@ -901,17 +901,42 @@ function fillSimpleListSheet(wbOut, sheetNameInput, listRequests){
 function buildPromoModel(p, tipo, coberturaTodos){
   const ean = (p.eans || [])[0] || '-';
 
+  let tituloTipo = tipo;
+  let tipoBeneficio = '';
+  let valor = '';
+  let extra = [];
+
+  if(tipo === 'NOMINAL'){
+    tituloTipo = 'Precio Fijo a Producto';
+    tipoBeneficio = 'PRECIO FIJO';
+    valor = `$${p.precioFinal}`;
+  }
+
+  if(tipo === 'PORCENTUAL'){
+    tituloTipo = 'Porcentaje a Producto';
+    tipoBeneficio = 'PORCENTAJE';
+    valor = `${p.descuentoPct}%`;
+  }
+
+  if(tipo === 'PACK 2X1'){
+    tituloTipo = 'Pack 2x1';
+    tipoBeneficio = 'PRECIO PACK';
+    valor = `$${p.precioFinal}`;
+    extra.push(`Cantidad = ${p.unidadesPack}`);
+  }
+
+  if(tipo === 'DESCUENTO 2DA UNIDAD (%)'){
+    tituloTipo = 'Descuento 2da Unidad';
+    tipoBeneficio = '2DA UNIDAD';
+    valor = `${p.descuentoPct}%`;
+    extra.push('Cantidad = 2');
+    extra.push('Beneficio = 1');
+  }
+
   return {
     numero: p.numero,
     tipo,
-
-    tituloTipo:
-      tipo === 'NOMINAL'
-        ? 'Precio Fijo a Producto'
-        : tipo === 'PORCENTUAL'
-        ? 'Porcentaje a Producto'
-        : tipo,
-
+    tituloTipo,
     vigencia: `${p.fechaInicio} → ${p.fechaFin}`,
 
     condiciones: {
@@ -921,23 +946,25 @@ function buildPromoModel(p, tipo, coberturaTodos){
     },
 
     aplicadores: {
-      tipo:
-        tipo === 'NOMINAL'
-          ? 'PRECIO FIJO'
-          : 'PORCENTAJE',
-
-      valor:
-        tipo === 'NOMINAL'
-          ? `$${p.precioFinal}`
-          : `${p.descuentoPct}%`,
-
+      tipo: tipoBeneficio,
+      valor,
       ean,
-      porUnidad: 'SI'
+      porUnidad: 'SI',
+      extra
     }
   };
 }
 
-function renderPromoCard(model){
+function renderPromoCard(m){
+  const extraHtml = (m.aplicadores.extra || [])
+    .map(x => `
+      <div style="display:flex; gap:6px; margin-top:4px;">
+        <div style="width:120px;">Extra</div>
+        <div>=</div>
+        <div>${x}</div>
+      </div>
+    `).join('');
+
   return `
     <div style="
       border-radius:16px;
@@ -948,101 +975,42 @@ function renderPromoCard(model){
       box-shadow:0 10px 28px rgba(0,0,0,0.08);
     ">
 
-      <!-- HEADER -->
-      <div style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        margin-bottom:10px;
-      ">
-        <div style="font-weight:900; font-size:14px;">
-          Promo N${model.numero}
-        </div>
-
-        <div style="
+      <div style="display:flex; justify-content:space-between;">
+        <b>Promo N${m.numero}</b>
+        <span style="
           font-size:10px;
-          font-weight:800;
           padding:3px 8px;
           border-radius:999px;
-          background:${model.tipo === 'NOMINAL' ? '#dbeafe' : '#ede9fe'};
-          color:${model.tipo === 'NOMINAL' ? '#1d4ed8' : '#5b21b6'};
+          background:#e0f2fe;
         ">
-          ${model.aplicadores.tipo}
+          ${m.aplicadores.tipo}
+        </span>
+      </div>
+
+      <div style="margin:6px 0; font-weight:800;">
+        ${m.tituloTipo}
+      </div>
+
+      <div style="font-size:11px; color:#64748b;">
+        Vigencia: ${m.vigencia}
+      </div>
+
+      <div style="margin-top:10px; border:1px solid #e2e8f0;">
+        <div style="background:#f1f5f9; padding:6px;">CONDICIONES</div>
+        <div style="padding:10px;">
+          Documento = ${m.condiciones.documento}<br>
+          Locales = ${m.condiciones.locales}<br>
+          EAN = ${m.condiciones.ean}
         </div>
       </div>
 
-      <div style="font-size:12px; font-weight:800; margin-bottom:6px;">
-        ${model.tituloTipo}
-      </div>
-
-      <div style="font-size:11px; color:#64748b; margin-bottom:12px;">
-        Vigencia: ${model.vigencia}
-      </div>
-
-      <!-- CONDICIONES -->
-      <div style="
-        border:1px solid #e2e8f0;
-        border-radius:10px;
-        overflow:hidden;
-        margin-bottom:10px;
-      ">
-        <div style="background:#f1f5f9; font-size:11px; font-weight:900; padding:6px 10px;">
-          CONDICIONES
-        </div>
-
-        <div style="padding:10px; font-size:12px;">
-
-          <div style="display:flex; gap:6px;">
-            <div style="width:120px;">Documento</div>
-            <div>=</div>
-            <div>${model.condiciones.documento}</div>
-          </div>
-
-          <div style="display:flex; gap:6px; margin-top:4px;">
-            <div style="width:120px;">Locales</div>
-            <div>=</div>
-            <div>${model.condiciones.locales}</div>
-          </div>
-
-          <div style="display:flex; gap:6px; margin-top:4px;">
-            <div style="width:120px;">EAN</div>
-            <div>=</div>
-            <div>${model.condiciones.ean}</div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- APLICADORES -->
-      <div style="
-        border:1px solid #bbf7d0;
-        border-radius:10px;
-        overflow:hidden;
-      ">
-        <div style="background:#dcfce7; font-size:11px; font-weight:900; padding:6px 10px;">
-          APLICADORES
-        </div>
-
-        <div style="padding:10px; font-size:12px;">
-
-          <div style="display:flex; gap:6px;">
-            <div style="width:120px;">Beneficio</div>
-            <div>=</div>
-            <div>${model.aplicadores.valor}</div>
-          </div>
-
-          <div style="display:flex; gap:6px; margin-top:4px;">
-            <div style="width:120px;">Aplicado a</div>
-            <div>=</div>
-            <div>${model.aplicadores.ean}</div>
-          </div>
-
-          <div style="display:flex; gap:6px; margin-top:4px;">
-            <div style="width:120px;">Por unidad</div>
-            <div>=</div>
-            <div>${model.aplicadores.porUnidad}</div>
-          </div>
-
+      <div style="margin-top:10px; border:1px solid #bbf7d0;">
+        <div style="background:#dcfce7; padding:6px;">APLICADORES</div>
+        <div style="padding:10px;">
+          Beneficio = ${m.aplicadores.valor}<br>
+          Aplicado a = ${m.aplicadores.ean}<br>
+          Por unidad = ${m.aplicadores.porUnidad}
+          ${extraHtml}
         </div>
       </div>
 
@@ -2412,8 +2380,9 @@ const previewModalHTML = `
         </div>
       </div>
       <div class="modalF">
-        <button class="btn secondary" id="previewCloseBtn2">Cerrar</button>
-      </div>
+		 <button class="btn secondary" onclick="exportPreviewPDF()">Exportar PDF</button>
+		 <button class="btn secondary" id="previewCloseBtn2">Cerrar</button>
+	  </div>
     </div>
   </div>
 `;
@@ -2548,7 +2517,7 @@ function renderPreviewTableEventos(rows){
     </tbody>
   `;
 }
-
+// PREVIEW
 async function runPreview(){
   currentSourceMode = SOURCE_MODE.NORMAL; // 🔥 FIX CLAVE
 
@@ -2584,20 +2553,18 @@ async function runPreview(){
       previewListas.textContent = usarListas ? `SI (umbral=${umbral})` : 'NO';
       previewModo.textContent = `Normal · ${planTipos.join(' + ')}`;
 
-      const rows = buildPreviewRowsNormal({ planTipos, promosByTipo, umbral, usarListas });
-      if (planTipos.length === 1 && planTipos[0] === 'NOMINAL') {
-      const promos = promosByTipo.get('NOMINAL') || [];
-      const coberturaTodos = detectCoberturaLocalesTodos(origenFiltrado);
-      
-        const models = promos.map(p =>
-		  buildPromoModel(p, planTipos[0], coberturaTodos)
+      const tipo = planTipos[0]; // 🔥 SOLO UN TIPO ACTIVO
+	  const promos = promosByTipo.get(tipo) || [];
+
+	  const coberturaTodos = detectCoberturaLocalesTodos(origenFiltrado);
+
+		// 🔥 MODELO ÚNICO (sirve para TODOS los tipos)
+	  const models = promos.map(p =>
+		  buildPromoModel(p, tipo, coberturaTodos)
 		);
 
-		const html = models.map(renderPromoCard).join('');
-		previewTable.innerHTML = `<div>${html}</div>`;
-      } else {
-        renderPreviewTableNormal(rows); // fallback
-      }
+		// 🔥 RENDER ÚNICO (sin ifs, sin duplicación)
+		previewTable.innerHTML = models.map(renderPromoCard).join('');
       openPreviewModal();
       return;
     }
@@ -2786,6 +2753,20 @@ function renderPreviewCardsNominal(promos, coberturaTodos){
   }).join('');
 
   previewTable.innerHTML = `<div style="display:flex; flex-direction:column;">${cards}</div>`;
+}
+
+function exportPreviewPDF(){
+  const element = document.getElementById('previewTable');
+
+  html2pdf()
+    .from(element)
+    .set({
+      margin: 10,
+      filename: 'promos_preview.pdf',
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    })
+    .save();
 }
 
 // Con la separación en archivos, es mejor enganchar el botón por JS:
