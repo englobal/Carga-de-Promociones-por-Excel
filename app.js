@@ -2608,27 +2608,17 @@ async function runPreview(){
         promosByTipo.set(tipo, grouped.promos || []);
       }
 
-      const umbral = Math.max(1, parseInt(umbralEans.value || '5', 10));
-      const usarListas = !!chkListas.checked;
-
-      // ✅ SOLO UNA VEZ (FIX ERROR)
-      const coberturaTodos = detectCoberturaLocalesTodos(origenFiltrado);
-
-      previewCobertura.textContent = coberturaTodos ? 'TODOS (AZ=EXC_LOCALES)' : '(no aplica)';
-      previewClub.textContent = chkClub.checked ? `SI (${getClubConveniosDataSafe().list.length} convenios)` : 'NO';
-      previewListas.textContent = usarListas ? `SI (umbral=${umbral})` : 'NO';
       previewModo.textContent = `Normal · ${planTipos.join(' + ')}`;
 
-      // 🔥 usamos SOLO el tipo activo
       const tipo = planTipos[0];
       const promos = promosByTipo.get(tipo) || [];
 
-      // 🔥 modelo único
+      const coberturaTodos = detectCoberturaLocalesTodos(origenFiltrado);
+
       const models = promos.map(p =>
         buildPromoModel(p, tipo, coberturaTodos)
       );
 
-      // 🔥 render único
       previewTable.innerHTML = models.map(renderPromoCard).join('');
 
       openPreviewModal();
@@ -2652,12 +2642,13 @@ async function runPreview(){
       umbralLocales
     );
 
-    previewCobertura.textContent = '(n/a eventos)';
-    previewClub.textContent = '(n/a eventos)';
-    previewListas.textContent = `Prod=${model.productListRequests.length} / Loc=${model.localListRequests.length}`;
-    previewModo.textContent = `Eventos · ${selectedUser} · ini=${sanitizeLetters2(initials)}`;
+    previewModo.textContent = `Eventos · ${selectedUser}`;
 
-    const rows = buildPreviewRowsEventos({ promos: model.promos, umbralLocales });
+    const rows = buildPreviewRowsEventos({
+      promos: model.promos,
+      umbralLocales
+    });
+
     renderPreviewTableEventos(rows);
 
     openPreviewModal();
