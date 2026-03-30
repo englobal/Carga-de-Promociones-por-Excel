@@ -417,13 +417,16 @@ details.debugDetails > summary::-webkit-details-marker { display:none; }
   background: rgba(15, 23, 42, .55);
 
   display:none; 
-  align-items:center; 
+  align-items:flex-start;   /* 🔥 CAMBIO CLAVE */
   justify-content:center;
 
   padding:18px; 
   z-index:9999;
 
-  overflow:hidden;           /* 👈 NUEVO (IMPORTANTE) */
+  overflow:hidden;
+}
+.modalOverlay{
+  padding-top:40px;
 }
 .modal{
   width:min(680px, 100%);
