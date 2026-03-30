@@ -2409,95 +2409,76 @@ clubConveniosInput.value = CLUB_CFG.DEFAULT_CONVENIOS_CSV;
 clubConveniosInput.disabled = true;
 applyNombreGeneralDefaultMode(true);
 applySourceModeUI(SOURCE_MODE.NORMAL);
-// ================= PREVIEW =================
-// ================= PREVIEW =================
+
+// ================= PREVIEW MODAL =================
+
 const previewModalHTML = `
   <div class="modalOverlay" id="previewOverlay" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+    <div class="modal">
+
       <div class="modalH">
-        <strong id="previewTitle">Detalle de Promociones</strong>
+        <strong>Visualización</strong>
+        <button class="btn secondary" data-close-preview>✕</button>
       </div>
+
       <div class="modalB">
-        <p style="margin:0 0 10px 0;">
-          Esto es solo una <b>previsualización</b>. No descarga archivos.
-        </p>
 
-        <div class="card" style="margin-bottom:10px;">
+        <div class="card">
           <div class="k">Origen</div>
-          <div class="v" id="previewOrigenName">-</div>
+          <div id="previewOrigenName"></div>
         </div>
 
-        <div class="card" style="margin-bottom:10px;">
+        <div class="card">
           <div class="k">Modo</div>
-          <div class="v" id="previewModo">-</div>
+          <div id="previewModo"></div>
         </div>
 
-        <div class="card" style="margin-bottom:10px;">
+        <div class="card">
           <div class="k">Nombre General</div>
-          <div class="v" id="previewNombreGeneral">-</div>
+          <div id="previewNombreGeneral"></div>
         </div>
 
-        <div class="card" style="margin-bottom:10px;">
-          <div class="k">Cobertura Locales</div>
-          <div class="v" id="previewCobertura">-</div>
-        </div>
+        <div id="previewTable"></div>
 
-        <div class="card" style="margin-bottom:10px;">
-          <div class="k">Club</div>
-          <div class="v" id="previewClub">-</div>
-        </div>
-
-        <div class="card" style="margin-bottom:10px;">
-          <div class="k">Listas</div>
-          <div class="v" id="previewListas">-</div>
-        </div>
-
-        <div class="tableWrap" style="margin-top:10px;">
-          <table id="previewTable"></table>
-        </div>
-
-        <div class="hintCard" style="margin-top:10px;">
-          <b>Tip:</b> Si faltan columnas o datos, revisa el panel de logs.
-        </div>
       </div>
+
       <div class="modalF">
-		 <button class="btn secondary" onclick="exportPreviewPDF()">Exportar PDF</button>
-		 <button class="btn secondary" id="previewCloseBtn2">Cerrar</button>
-	  </div>
+        <button class="btn secondary" onclick="exportPreviewPDF()">PDF</button>
+        <button class="btn secondary" data-close-preview>Cerrar</button>
+      </div>
+
     </div>
   </div>
 `;
 
 document.body.insertAdjacentHTML('beforeend', previewModalHTML);
 
+// 🔥 AHORA SÍ LOS ELEMENTOS EXISTEN
 const previewOverlay = document.getElementById('previewOverlay');
-const previewCloseBtn = document.getElementById('previewCloseBtn');
-const previewCloseBtn2 = document.getElementById('previewCloseBtn2');
-
 const previewOrigenName = document.getElementById('previewOrigenName');
 const previewModo = document.getElementById('previewModo');
 const previewNombreGeneral = document.getElementById('previewNombreGeneral');
-const previewCobertura = document.getElementById('previewCobertura');
-const previewClub = document.getElementById('previewClub');
-const previewListas = document.getElementById('previewListas');
 const previewTable = document.getElementById('previewTable');
+
+// ================= FUNCIONES =================
 
 function openPreviewModal(){
   previewOverlay.style.display = 'flex';
-  previewOverlay.setAttribute('aria-hidden','false');
-
-  document.body.classList.add('modal-open'); // 👈 NUEVO
+  document.body.classList.add('modal-open');
 }
+
 function closePreviewModal(){
   previewOverlay.style.display = 'none';
-  previewOverlay.setAttribute('aria-hidden','true');
-
-  document.body.classList.remove('modal-open'); // 👈 NUEVO
+  document.body.classList.remove('modal-open');
 }
-previewCloseBtn.addEventListener('click', closePreviewModal);
-previewCloseBtn2.addEventListener('click', closePreviewModal);
-previewOverlay.addEventListener('click', (e)=>{ if (e.target === previewOverlay) closePreviewModal(); });
-document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape' && previewOverlay.style.display === 'flex') closePreviewModal(); });
+
+// 🔥 FIX CLAVE → NO USAMOS IDs, usamos delegación
+document.addEventListener('click', (e)=>{
+  if(e.target.closest('[data-close-preview]')){
+    closePreviewModal();
+  }
+});
+// ================= END PREVIEW MODAL =================
 
 function buildPreviewRowsNormal({ planTipos, promosByTipo, umbral, usarListas }){
   const rows = [];
